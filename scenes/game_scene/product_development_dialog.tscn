@@ -1,0 +1,140 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqp5x8mjwhl0x"]
+
+[ext_resource type="Script" path="res://scenes/game_scene/product_development_dialog.gd" id="1_0a2c3"]
+
+[node name="ProductDevelopmentDialog" type="AcceptDialog"]
+title = "Product Development"
+size = Vector2i(500, 400)
+script = ExtResource("1_0a2c3")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Configure Product Development"
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ProductConfigVBox" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/ProductConfigVBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/NameHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Product Name:"
+
+[node name="NameLineEdit" type="LineEdit" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/NameHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter product name"
+
+[node name="AttractivenesHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/ProductConfigVBox"]
+layout_mode = 2
+
+[node name="AttractLabel" type="Label" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/AttractivenesHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Attractiveness:"
+
+[node name="AttractSpinBox" type="SpinBox" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/AttractivenesHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100.0
+value = 50.0
+
+[node name="UtilityHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/ProductConfigVBox"]
+layout_mode = 2
+
+[node name="UtilityLabel" type="Label" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/UtilityHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Utility:"
+
+[node name="UtilitySpinBox" type="SpinBox" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/UtilityHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100.0
+value = 50.0
+
+[node name="QualityHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/ProductConfigVBox"]
+layout_mode = 2
+
+[node name="QualityLabel" type="Label" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/QualityHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Quality:"
+
+[node name="QualitySpinBox" type="SpinBox" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/QualityHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100.0
+value = 50.0
+
+[node name="InnovationHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/ProductConfigVBox"]
+layout_mode = 2
+
+[node name="InnovationLabel" type="Label" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/InnovationHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Innovation:"
+
+[node name="InnovationSpinBox" type="SpinBox" parent="VBoxContainer/ScrollContainer/ProductConfigVBox/InnovationHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100.0
+value = 25.0
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CostEstimateLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Estimated Development Cost: $10,000"
+horizontal_alignment = 1
+
+[node name="ButtonHBox" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="DevelopButton" type="Button" parent="VBoxContainer/ButtonHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Develop Product"
+
+[node name="CancelButton" type="Button" parent="VBoxContainer/ButtonHBox"]
+layout_mode = 2
+text = "Cancel"
+
+[connection signal="value_changed" from="VBoxContainer/ScrollContainer/ProductConfigVBox/AttractivenesHBox/AttractSpinBox" to="." method="_on_attribute_changed"]
+[connection signal="value_changed" from="VBoxContainer/ScrollContainer/ProductConfigVBox/UtilityHBox/UtilitySpinBox" to="." method="_on_attribute_changed"]
+[connection signal="value_changed" from="VBoxContainer/ScrollContainer/ProductConfigVBox/QualityHBox/QualitySpinBox" to="." method="_on_attribute_changed"]
+[connection signal="value_changed" from="VBoxContainer/ScrollContainer/ProductConfigVBox/InnovationHBox/InnovationSpinBox" to="." method="_on_attribute_changed"]
+[connection signal="pressed" from="VBoxContainer/ButtonHBox/DevelopButton" to="." method="_on_develop_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ButtonHBox/CancelButton" to="." method="_on_cancel_button_pressed"]

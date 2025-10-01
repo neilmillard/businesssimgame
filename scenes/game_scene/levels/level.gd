@@ -6,6 +6,9 @@ signal level_won_and_changed(level_path : String)
 
 @export_file("*.tscn") var next_level_path : String
 
+const ProductDevelopmentDialog = preload("res://scenes/game_scene/product_development_dialog.tscn")
+var product_dialog: AcceptDialog
+
 var level_state : LevelState
 var current_products : Array[Product] = []
 var current_buyers : Array[Buyer] = []
@@ -34,6 +37,15 @@ func _ready() -> void:
 	level_state = GameState.get_level_state(scene_file_path)
 	if not level_state.tutorial_read:
 		open_tutorials()
+	
+	# Initialize product development dialog
+	product_dialog = ProductDevelopmentDialog.instantiate()
+	add_child(product_dialog)
+	product_dialog.setup(finance_dept)
+	product_dialog.product_developed.connect(_on_product_developed)
+	
+	# Get reference to product list container
+	var product_list_vbox = %ProductListVBox
 	
 	# Initialize buyers for the market
 	initialize_buyers()
@@ -79,10 +91,95 @@ func create_new_product(product_name: String = "") -> Product:
 func get_products() -> Array[Product]:
 	return current_products
 
+func _on_create_product_button_pressed() -> void:
+	product_dialog.show_dialog()
+
+func _on_product_developed(product: Product) -> void:
+	# Calculate development cost
+	var development_cost = finance_dept.calculate_product_development_cost()
+	
+	# Record the development expense
+	finance_dept.record_expense(development_cost, "product_development")
+	
+	# Add intellectual property value to assets
+	var ip_value = development_cost * 0.7  # 70% of development cost becomes IP value
+	finance_dept.add_asset_value(ip_value, "intellectual_property")
+	
+	current_products.append(product)
+	print("Developed new product: ", product.product_name)
+	print("  - Attractiveness: ", product.attractiveness)
+	print("  - Utility: ", product.utility)
+	print("  - Quality: ", product.quality)
+	print("  - Innovation: ", product.innovation_level)
+	print("  - Development Cost: $", development_cost)
+	update_product_display()
+
+func _on_product_button_pressed(product_index: int) -> void:
+	if product_index >= 0 and product_index < current_products.size():
+		show_product_attributes(current_products[product_index])
+
+func show_product_attributes(product: Product) -> void:
+	var dialog = AcceptDialog.new()
+	dialog.title = "Product Attributes - " + product.product_name
+	dialog.size = Vector2i(450, 500)
+	
+	var scroll = ScrollContainer.new()
+	var vbox = VBoxContainer.new()
+	scroll.add_child(vbox)
+	dialog.add_child(scroll)
+	
+	scroll.anchors_preset = Control.PRESET_FULL_RECT
+	scroll.offset_left = 8
+	scroll.offset_top = 8
+	scroll.offset_right = -8
+	scroll.offset_bottom = -36
+	
+	# Add product information
+	var info_lines = [
+		"Product Name: " + product.product_name,
+		"",
+		"Core Attributes:",
+		"  Attractiveness: " + str(int(product.attractiveness)) + "/100",
+		"  Utility: " + str(int(product.utility)) + "/100", 
+		"  Quality: " + str(int(product.quality)) + "/100",
+		"  Value: " + str(int(product.value)) + "/100",
+		"",
+		"Business Metrics:",
+		"  Brand Appeal: " + str(int(product.brand_appeal)) + "/100",
+		"  Market Fit: " + str(int(product.market_fit)) + "/100",
+		"  Innovation Level: " + str(int(product.innovation_level)) + "/100",
+		"  Durability: " + str(int(product.durability)) + "/100",
+		"  Environmental Impact: " + str(int(product.environmental_impact)) + "/100",
+		"",
+		"Financial:",
+		"  Production Cost: $" + str(int(product.cost)),
+		"  Retail Price: $" + str(int(product.retail_price)),
+		"  Profit Margin: " + str(int(product.get_profit_margin())) + "%",
+		"",
+		"Performance:",
+		"  Overall Score: " + str(int(product.get_overall_score())) + "/100",
+		"  Market Demand: " + str(int(product.estimate_market_demand())) + "/100",
+		"  Market Ready: " + ("Yes" if product.is_market_ready() else "No")
+	]
+	
+	for line in info_lines:
+		var label = Label.new()
+		label.text = line
+		if line.begins_with("  "):
+			label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+		elif line == "":
+			label.custom_minimum_size.y = 5
+		elif line.ends_with(":"):
+			label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+		vbox.add_child(label)
+	
+	add_child(dialog)
+	dialog.popup_centered()
+	dialog.confirmed.connect(func(): dialog.queue_free())
+
 func _on_product_development_pane_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		create_new_product()
-		update_product_display()
+	# Removed automatic product creation on click - use Create Product button instead
+	pass
 
 # Initialize buyers for the market
 func initialize_buyers(count: int = 20) -> void:
@@ -227,19 +324,34 @@ func update_gui_displays() -> void:
 
 func update_product_display() -> void:
 	var product_count_label = %ProductCountLabel
-	var product_list_label = %ProductListLabel
+	var product_list_vbox = %ProductListVBox
 	
 	if product_count_label:
 		product_count_label.text = "Products: " + str(current_products.size())
 	
-	if product_list_label:
+	if product_list_vbox:
+		# Clear existing buttons
+		for child in product_list_vbox.get_children():
+			child.queue_free()
+		
 		if current_products.is_empty():
-			product_list_label.text = "Click to create new product"
+			var no_products_label = Label.new()
+			no_products_label.text = "No products yet"
+			no_products_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			product_list_vbox.add_child(no_products_label)
 		else:
-			var product_info = []
-			for product in current_products:
-				product_info.append(product.product_name + " (Score: " + str(int(product.get_overall_score())) + ")")
-			product_list_label.text = "\n".join(product_info)
+			# Create individual buttons for each product
+			for i in range(current_products.size()):
+				var product = current_products[i]
+				var product_button = Button.new()
+				product_button.text = product.product_name + " (Score: " + str(int(product.get_overall_score())) + ")"
+				product_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+				
+				# Connect button to show product attributes
+				var product_index = i
+				product_button.pressed.connect(_on_product_button_pressed.bind(product_index))
+				
+				product_list_vbox.add_child(product_button)
 
 func update_marketing_display() -> void:
 	var campaign_count_label = %CampaignCountLabel
