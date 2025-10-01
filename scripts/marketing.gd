@@ -88,6 +88,18 @@ func launch_campaign(campaign: Campaign) -> bool:
 		return true
 	return false
 
+# Start a campaign (alias for launch_campaign)
+func start_campaign(campaign: Campaign) -> bool:
+	return launch_campaign(campaign)
+
+# Stop a campaign
+func stop_campaign(campaign: Campaign) -> bool:
+	if campaign in active_campaigns and campaign.is_active:
+		campaign.is_active = false
+		print("Stopped campaign: ", campaign.campaign_name)
+		return true
+	return false
+
 # Process marketing campaigns and affect buyers
 func run_marketing_cycle(buyers: Array[Buyer], products: Array[Product], delta_time: float = 1.0) -> Array[Lead]:
 	var new_leads: Array[Lead] = []

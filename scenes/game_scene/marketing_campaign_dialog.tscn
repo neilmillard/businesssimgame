@@ -1,0 +1,128 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqp5x8mjwhl1x"]
+
+[ext_resource type="Script" path="res://scenes/game_scene/marketing_campaign_dialog.gd" id="1_0a2c4"]
+
+[node name="MarketingCampaignDialog" type="AcceptDialog"]
+title = "Marketing Campaign"
+size = Vector2i(500, 400)
+script = ExtResource("1_0a2c4")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Configure Marketing Campaign"
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CampaignConfigVBox" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/NameHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Campaign Name:"
+
+[node name="NameLineEdit" type="LineEdit" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/NameHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter campaign name"
+
+[node name="TypeHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox"]
+layout_mode = 2
+
+[node name="TypeLabel" type="Label" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/TypeHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Campaign Type:"
+
+[node name="TypeOptionButton" type="OptionButton" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/TypeHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BudgetHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/BudgetHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Budget:"
+
+[node name="BudgetSpinBox" type="SpinBox" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/BudgetHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 500.0
+max_value = 10000.0
+step = 100.0
+value = 1500.0
+suffix = "$"
+
+[node name="DurationHBox" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox"]
+layout_mode = 2
+
+[node name="DurationLabel" type="Label" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/DurationHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(120, 0)
+text = "Duration:"
+
+[node name="DurationSpinBox" type="SpinBox" parent="VBoxContainer/ScrollContainer/CampaignConfigVBox/DurationHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 30.0
+value = 7.0
+suffix = " days"
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CostEstimateLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Estimated Campaign Cost: $1,500"
+horizontal_alignment = 1
+
+[node name="ButtonHBox" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="LaunchButton" type="Button" parent="VBoxContainer/ButtonHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Launch Campaign"
+
+[node name="CancelButton" type="Button" parent="VBoxContainer/ButtonHBox"]
+layout_mode = 2
+text = "Cancel"
+
+[connection signal="item_selected" from="VBoxContainer/ScrollContainer/CampaignConfigVBox/TypeHBox/TypeOptionButton" to="." method="_on_campaign_type_changed"]
+[connection signal="value_changed" from="VBoxContainer/ScrollContainer/CampaignConfigVBox/BudgetHBox/BudgetSpinBox" to="." method="_on_budget_changed"]
+[connection signal="value_changed" from="VBoxContainer/ScrollContainer/CampaignConfigVBox/DurationHBox/DurationSpinBox" to="." method="_on_duration_changed"]
+[connection signal="pressed" from="VBoxContainer/ButtonHBox/LaunchButton" to="." method="_on_launch_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ButtonHBox/CancelButton" to="." method="_on_cancel_button_pressed"]

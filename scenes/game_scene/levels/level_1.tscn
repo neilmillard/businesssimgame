@@ -117,6 +117,16 @@ layout_mode = 2
 text = "Leads Generated: 0"
 horizontal_alignment = 1
 
+[node name="CreateCampaignButton" type="Button" parent="MarginContainer/GridContainer/MarketingPane/MarketingVBox"]
+custom_minimum_size = Vector2(120, 30)
+layout_mode = 2
+text = "Create Campaign"
+
+[node name="CampaignListVBox" type="VBoxContainer" parent="MarginContainer/GridContainer/MarketingPane/MarketingVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
 [node name="SalesPane" type="Panel" parent="MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -255,5 +265,6 @@ tutorial_scenes = Array[PackedScene]([ExtResource("5_fmabn")])
 [connection signal="gui_input" from="MarginContainer/GridContainer/ProductDevelopmentPane" to="." method="_on_product_development_pane_gui_input"]
 [connection signal="pressed" from="MarginContainer/GridContainer/ProductDevelopmentPane/ProductDevelopmentVBox/CreateProductButton" to="." method="_on_create_product_button_pressed"]
 [connection signal="gui_input" from="MarginContainer/GridContainer/MarketingPane" to="." method="_on_marketing_pane_gui_input"]
+[connection signal="pressed" from="MarginContainer/GridContainer/MarketingPane/MarketingVBox/CreateCampaignButton" to="." method="_on_create_campaign_button_pressed"]
 [connection signal="gui_input" from="MarginContainer/GridContainer/SalesPane" to="." method="_on_sales_pane_gui_input"]
 [connection signal="gui_input" from="MarginContainer/GridContainer/OperationsPane" to="." method="_on_operations_pane_gui_input"]

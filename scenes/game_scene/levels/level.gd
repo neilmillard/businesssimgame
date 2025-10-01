@@ -7,7 +7,9 @@ signal level_won_and_changed(level_path : String)
 @export_file("*.tscn") var next_level_path : String
 
 const ProductDevelopmentDialog = preload("res://scenes/game_scene/product_development_dialog.tscn")
+const MarketingCampaignDialog = preload("res://scenes/game_scene/marketing_campaign_dialog.tscn")
 var product_dialog: AcceptDialog
+var campaign_dialog: AcceptDialog
 
 var level_state : LevelState
 var current_products : Array[Product] = []
@@ -43,6 +45,12 @@ func _ready() -> void:
 	add_child(product_dialog)
 	product_dialog.setup(finance_dept)
 	product_dialog.product_developed.connect(_on_product_developed)
+	
+	# Initialize marketing campaign dialog
+	campaign_dialog = MarketingCampaignDialog.instantiate()
+	add_child(campaign_dialog)
+	campaign_dialog.setup(finance_dept)
+	campaign_dialog.campaign_created.connect(_on_campaign_created)
 	
 	# Get reference to product list container
 	var product_list_vbox = %ProductListVBox
@@ -94,6 +102,9 @@ func get_products() -> Array[Product]:
 func _on_create_product_button_pressed() -> void:
 	product_dialog.show_dialog()
 
+func _on_create_campaign_button_pressed() -> void:
+	campaign_dialog.show_dialog()
+
 func _on_product_developed(product: Product) -> void:
 	# Calculate development cost
 	var development_cost = finance_dept.calculate_product_development_cost()
@@ -113,6 +124,54 @@ func _on_product_developed(product: Product) -> void:
 	print("  - Innovation: ", product.innovation_level)
 	print("  - Development Cost: $", development_cost)
 	update_product_display()
+
+func _on_campaign_created(campaign_name: String, campaign_type: int, budget: float, duration: int) -> void:
+	if current_products.is_empty():
+		print("No products available to market!")
+		return
+	
+	# Calculate campaign cost based on dialog parameters
+	var base_multiplier = 1.0
+	match campaign_type:
+		0: # Awareness
+			base_multiplier = 1.0
+		1: # Lead Generation
+			base_multiplier = 1.2
+		2: # Conversion
+			base_multiplier = 1.5
+		3: # Retention
+			base_multiplier = 0.8
+	
+	var campaign_cost = budget * base_multiplier * (duration / 7.0)
+	
+	# Check affordability
+	if not finance_dept.can_afford(campaign_cost):
+		print("Cannot afford campaign! Cost: $", campaign_cost, ", Balance: $", finance_dept.get_cash_balance())
+		return
+	
+	# Create campaign with marketing department
+	var product_names: Array[String] = []
+	for product in current_products:
+		product_names.append(product.product_name)
+	
+	var marketing_campaign_type = Marketing.CampaignType.AWARENESS
+	match campaign_type:
+		0: marketing_campaign_type = Marketing.CampaignType.AWARENESS
+		1: marketing_campaign_type = Marketing.CampaignType.INTEREST
+		2: marketing_campaign_type = Marketing.CampaignType.MIXED
+	
+	var campaign = marketing_dept.create_campaign(campaign_name, marketing_campaign_type, product_names)
+	if campaign != null:
+		# Record the campaign cost as expense
+		finance_dept.record_expense(campaign_cost, "marketing")
+		print("Created new campaign: ", campaign_name)
+		print("  - Type: ", campaign_type)
+		print("  - Budget: $", budget)
+		print("  - Duration: ", duration, " days")
+		print("  - Actual Cost: $", campaign_cost)
+		update_marketing_display()
+	else:
+		print("Failed to create campaign")
 
 func _on_product_button_pressed(product_index: int) -> void:
 	if product_index >= 0 and product_index < current_products.size():
@@ -357,19 +416,83 @@ func update_marketing_display() -> void:
 	var campaign_count_label = %CampaignCountLabel
 	var buyer_states_label = %BuyerStatesLabel
 	var leads_label = %LeadsLabel
+	var campaign_list_vbox = %CampaignListVBox
 	
 	# Get marketing department data
-	var active_campaigns = marketing_dept.get_active_campaigns().size()
+	var active_campaigns = marketing_dept.get_active_campaigns()
 	var summary = get_buyer_summary()
 	
 	if campaign_count_label:
-		campaign_count_label.text = "Active Campaigns: " + str(active_campaigns)
+		campaign_count_label.text = "Active Campaigns: " + str(active_campaigns.size())
 	
 	if buyer_states_label:
 		buyer_states_label.text = "Oblivious: " + str(summary.oblivious) + " | Educated: " + str(summary.educated) + " | Interested: " + str(summary.interested)
 	
 	if leads_label:
 		leads_label.text = "Leads Generated: " + str(summary.leads)
+	
+	# Update campaign list display
+	if campaign_list_vbox:
+		# Clear existing buttons
+		for child in campaign_list_vbox.get_children():
+			child.queue_free()
+		
+		if active_campaigns.is_empty():
+			var no_campaigns_label = Label.new()
+			no_campaigns_label.text = "No campaigns yet"
+			no_campaigns_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			campaign_list_vbox.add_child(no_campaigns_label)
+		else:
+			# Create controls for each active campaign
+			for i in range(active_campaigns.size()):
+				var campaign = active_campaigns[i]
+				var campaign_hbox = HBoxContainer.new()
+				
+				# Campaign info label
+				var campaign_label = Label.new()
+				var type_name = _get_campaign_type_name(campaign.campaign_type)
+				campaign_label.text = campaign.campaign_name + " (" + type_name + ")"
+				campaign_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				campaign_hbox.add_child(campaign_label)
+				
+				# Start/Stop button
+				var control_button = Button.new()
+				if campaign.is_active:
+					control_button.text = "Stop"
+					control_button.pressed.connect(_on_campaign_stop_pressed.bind(i))
+				else:
+					control_button.text = "Start"
+					control_button.pressed.connect(_on_campaign_start_pressed.bind(i))
+				
+				campaign_hbox.add_child(control_button)
+				campaign_list_vbox.add_child(campaign_hbox)
+
+func _get_campaign_type_name(campaign_type) -> String:
+	match campaign_type:
+		Marketing.CampaignType.AWARENESS:
+			return "Awareness"
+		Marketing.CampaignType.INTEREST:
+			return "Lead Gen"
+		Marketing.CampaignType.MIXED:
+			return "Awareness and Lead Gen"
+		_:
+			return "Unknown"
+
+func _on_campaign_start_pressed(campaign_index: int) -> void:
+	var active_campaigns = marketing_dept.get_active_campaigns()
+	if campaign_index >= 0 and campaign_index < active_campaigns.size():
+		var campaign = active_campaigns[campaign_index]
+		marketing_dept.start_campaign(campaign)
+		print("Started campaign: ", campaign.campaign_name)
+		update_marketing_display()
+
+func _on_campaign_stop_pressed(campaign_index: int) -> void:
+	var active_campaigns = marketing_dept.get_active_campaigns()
+	if campaign_index >= 0 and campaign_index < active_campaigns.size():
+		var campaign = active_campaigns[campaign_index]
+		marketing_dept.stop_campaign(campaign)
+		print("Stopped campaign: ", campaign.campaign_name)
+		update_marketing_display()
 
 func update_sales_display() -> void:
 	var leads_processed_label = %LeadsProcessedLabel

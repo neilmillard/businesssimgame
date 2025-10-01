@@ -25,6 +25,7 @@ enum BuyerState {
 @export var marketing_exposures : int = 0  # How many marketing messages they've seen
 @export var time_in_current_state : float = 0.0  # Time spent in current state
 @export var last_interaction_time : String = ""
+@export var has_generated_lead : bool = false  # Track if this buyer has already generated a lead
 
 func _init(name: String = "", id: String = ""):
 	buyer_name = name if not name.is_empty() else "Buyer " + str(randi() % 10000)
@@ -76,6 +77,10 @@ func build_interest(product_appeal: float = 50.0, marketing_quality: float = 50.
 func generate_lead() -> Lead:
 	if current_state != BuyerState.INTERESTED:
 		return null
+	
+	# Check if buyer has already generated a lead
+	if has_generated_lead:
+		return null
 		
 	var lead = Lead.new()
 	lead.buyer_id = buyer_id
@@ -83,6 +88,9 @@ func generate_lead() -> Lead:
 	lead.lead_quality = calculate_lead_quality()
 	lead.buyer_budget = budget
 	lead.conversion_likelihood = calculate_conversion_likelihood()
+	
+	# Mark that this buyer has generated a lead
+	has_generated_lead = true
 	
 	print("Lead generated from buyer: ", buyer_name, " (Quality: ", lead.lead_quality, ")")
 	return lead

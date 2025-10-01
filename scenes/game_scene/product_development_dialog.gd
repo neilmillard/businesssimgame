@@ -5,7 +5,9 @@ signal product_developed(product: Product)
 var finance_dept: Finance
 
 func _ready():
-	_update_cost_estimate()
+	# Don't call _update_cost_estimate() here as UI nodes may not be ready yet
+	# It will be called when show_dialog() is invoked
+	pass
 
 func setup(finance_department: Finance):
 	finance_dept = finance_department
